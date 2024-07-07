@@ -6,6 +6,6 @@ serial-remote-tank.esym
 serial-remote-tank.hex
 serial-remote-tank.lst
 serial-remote-tank.STA
-*.sym
+serial-remote-tank.sym
 serial-remote-tank.tre
 serial-remote-tank.xsym
