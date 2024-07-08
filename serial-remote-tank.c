@@ -1,7 +1,7 @@
 #include <serial-remote-tank.h>
 #include <lcd_8bits.c>
 
-int1 valvulaEntrada = 0, valculaSaida = 0, heater = 0, cooler = 0, mixer = 0, sensoralto = 0, sensorbaixo = 0;
+int1 valvulaEntrada = 0, valvulaSaida = 0, heater = 0, cooler = 0, mixer = 0, sensorAlto = 0, sensorBaixo = 0;
 
 void abreValvulaEntrada();
 void fechaValvulaEntrada();
@@ -11,8 +11,8 @@ void ligaHeater();
 void desligaHeater();
 void ligaCooler();
 void desligaCooler();
-void ligaStirrer();
-void desligaStirrer();
+void ligaMixer();
+void desligaMixer();
 int1 getSensorBaixo();
 int16 getTemperatura();
 int1 getSensorAlto();
@@ -34,7 +34,19 @@ void main()
 
    while(TRUE)
    {
+      sensorBaixo = getSensorBaixo();
       
+      if(sensorBaixo == 1){
+      
+         abreValvulaEntrada();
+      
+      }
+      
+      else{
+      
+         
+      
+      }
       // criar booleanos de estado
       // testar se tá vazio
       // se n tive esvazia
@@ -93,12 +105,12 @@ void desligaCooler(){
    putc(0x00);
 }
 
-void ligaStirrer(){
+void ligaMixer(){
    putc(0x04);
    putc(0x01);
 }
 
-void desligaStirrer(){
+void desligaMixer(){
    putc(0x04);
    putc(0x00);
 }
