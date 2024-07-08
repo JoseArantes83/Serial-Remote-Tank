@@ -3,7 +3,7 @@
 ==========================================*/
 ///////////////////////////////////////////////////////////////////
 // CCS C Compiler
-// LCD 16x2
+// LCD 20x4
 //
 // by Nisar Ahmed
 // 2009/03/27
@@ -18,9 +18,9 @@
 #define PORT_D                  3
 #define PORT_E                  4
 
-#define NCHAR_PER_LINE          16              // max char numbers per line
-#define LCD_RS                  PIN_E0
-#define LCD_RW                  PIN_E2
+#define NCHAR_PER_LINE          20              // max char numbers per line
+#define LCD_RS                  PIN_E2
+//#define LCD_RW                  PIN_E0
 #define LCD_E                   PIN_E1
 #define LCD_DAT                 PORT_D
 //===========================================================================//
@@ -45,7 +45,7 @@ void lcd_write_cmd(int8 cmd)
 {
    delay_us(40);
    output_low(LCD_RS);
-   output_low(LCD_RW);
+//   output_low(LCD_RW);
    output(LCD_DAT, cmd);
    
    output_high(LCD_E);
@@ -58,7 +58,7 @@ void lcd_write_dat(int8 dat)
 {
    delay_us(40);
    output_high(LCD_RS);
-   output_low(LCD_RW);
+//   output_low(LCD_RW);
    output(LCD_DAT, dat);
    
    output_high(LCD_E);
@@ -89,7 +89,7 @@ void lcd_display_char(int8 line, int8 pos, int8 ch)
         line = (line==0) ? 0 : 1;
         pos  = (pos >NCHAR_PER_LINE) ? NCHAR_PER_LINE : pos;
 
-        tmp = 0x80 + 0x40*line + pos;
+        tmp = 0x80 + 0x40 * line + pos;
         lcd_write_cmd(tmp);
         lcd_write_dat(ch);
 }//end lcd_display_char()
@@ -110,17 +110,20 @@ void lcd_display_str(int8 line, char str[])
                 }
 }//end lcd_display_str()
 //===========================================================================//
-//--- lcd_gotoxy(coluna linha) -----/////////////////////////////////////////// 
+//--- lcd_gotoxy(coluhna linha) -----/////////////////////////////////////////// 
 void lcd_gotoxy(unsigned int8 x, unsigned int8 y)
 {
-   unsigned int8 address;
-   
-   if(y != 1)
-      address = 0x40;
-   else
-      address = 0x00;
-     
-   address += (x-1);   
-   lcd_write_cmd(0x80|address);
+    unsigned int8 address;
+    switch(y)
+    {
+        case 1: address = 0x00; break; // First line
+        case 2: address = 0x40; break; // Second line
+        case 3: address = 0x14; break; // Third line (if you have a 4-line display)
+        case 4: address = 0x54; break; // Fourth line (if you have a 4-line display)
+        default: address = 0x00; break; // Default to the first line if an invalid line is provided
+    }
+    address += (x - 1); // Adjust for zero indexing
+    lcd_write_cmd(0x80 | address); // Send command to set cursor position
 }
+
 //===========================================================================//
