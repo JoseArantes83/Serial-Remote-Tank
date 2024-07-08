@@ -1,8 +1,7 @@
 #include <serial-remote-tank.h>
 #include <lcd_8bits.c>
 
-int1 valvulaEntrada = 0, valvulaSaida = 0, heater = 0, cooler = 0, stirrer = 0;
-int1 valvulaBaixo = 0, valvulaCima = 0;
+int1 valvulaEntrada = 0, valculaSaida = 0, heater = 0, cooler = 0, mixer = 0, sensoralto = 0, sensorbaixo = 0;
 
 void abreValvulaEntrada();
 void fechaValvulaEntrada();
