@@ -14,6 +14,9 @@ void ligaCooler();
 void desligaCooler();
 void ligaStirrer();
 void desligaStirrer();
+int1 getSensorBaixo();
+int16 getTemperatura();
+int1 getSensorAlto();
 
 #INT_TIMER0
 void  TIMER0_isr(void) 
@@ -24,7 +27,6 @@ void  TIMER0_isr(void)
 void main()
 {
    setup_timer_0(RTCC_INTERNAL|RTCC_DIV_8|RTCC_8_BIT);      //2,0 ms overflow
-
 
    enable_interrupts(INT_TIMER0);
    enable_interrupts(GLOBAL);
@@ -100,4 +102,22 @@ void ligaStirrer(){
 void desligaStirrer(){
    putc(0x04);
    putc(0x00);
+}
+
+int1 getSensorBaixo(){
+
+   putc(0x11);
+   return getc();
+}
+
+int16 getTemperatura(){
+
+   putc(0x31);
+   return getc();
+}
+
+int1 getSensorAlto(){
+
+   putc(0x10);
+   return getc();
 }
