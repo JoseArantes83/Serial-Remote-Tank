@@ -35,7 +35,9 @@ void main()
 
    while(TRUE)
    {
+
       
+ 
       // criar booleanos de estado
       // testar se tá vazio
       // se n tive esvazia
@@ -51,7 +53,6 @@ void main()
       // desliga mixer
       // se sensor baixo for 0, desliga valvula baixo e começa de novo.
    }
-
 }
 
 void abreValvulaEntrada(){  // Validado
@@ -105,19 +106,16 @@ void desligaStirrer(){
 }
 
 int1 getSensorBaixo(){
-
    putc(0x11);
    return getc();
 }
 
 int16 getTemperatura(){
-
    putc(0x31);
    return getc();
 }
 
 int1 getSensorAlto(){
-
    putc(0x10);
    return getc();
 }
