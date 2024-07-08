@@ -5,6 +5,9 @@ int1 processo_ligado = 0, fimTempo = 0;
 int1 valvulaEntrada = 0, valvulaSaida = 0, heater = 0, cooler = 0, mixer = 0, sensorAlto = 0, sensorBaixo = 0;
 int1  temperaturaAtual = 0, temperaturaSP = 0, temperaturaBaixa = 0, temperaturaAlta = 0,
 int8 tela = 1, volume = 0, contador = 0, temperaturaMinima = 0, temperaturaMaxima = 0;
+int1 fimMistura = 0;
+int8 tempoMistura = 0;
+int16 tempo_ms = 0, contaMistura = 0;
 
 void abreValvulaEntrada();
 void fechaValvulaEntrada();
@@ -30,6 +33,15 @@ void TIMER0_isr(void)
    {
       contador = 0;
       fimTempo = 1;
+   }
+   contaMistura++;
+   
+   if(contaMistura == tempo_ms){
+   
+      fimMistura = 1;
+      
+      contaMistura = 0;
+   
    }
 }
 
@@ -88,6 +100,62 @@ void main()
             mostraDados(4);
             break;
          }
+      }
+      sensorAlto = getSensorAlto();
+      
+      if(sensorAlto == 0){
+      
+         if(valvulaEntrada == 0)
+            abreValvulaEntrada();
+      
+      }
+      
+      else{
+      
+         if(valvulaEntrada == 1)
+            fechaValvulaEntrada();
+      
+         temperaturaAtual = getTemperatura();
+         
+         if(temperaturaAtual < 30){
+         
+            if(heater == 0)
+               ligaHeater();
+         
+         }
+         
+         else{
+            
+            if(heater == 1)
+               desligaHeater();
+         
+            if(fimMistura == 0){
+               
+               ligaMixer();
+            
+            }
+            
+            else{
+            
+               if(mixer == 1)
+                  desligaMixer();
+               
+               if(sensorBaixo == 1){
+               
+                  abreValvulaSaida();
+               
+               }
+               
+               else{
+               
+                  fechaValvulaSaida();
+               
+               }
+            
+            }
+         
+         }
+      
       }
 
       // criar booleanos de estado
@@ -187,60 +255,80 @@ void abreValvulaEntrada()
 { // Validado
    putc(0x00);
    putc(0x01);
+   
+   valvulaEntrada = 1;
 }
 
 void fechaValvulaEntrada()
 { // Validado
    putc(0x00);
    putc(0x00);
+   
+   valvulaEntrada = 0;
 }
 
 void abreValvulaSaida()
 { // Validado
    putc(0x01);
    putc(0x01);
+   
+   valvulaSaida = 1;
 }
 
 void fechaValvulaSaida()
 { // Validado
    putc(0x01);
    putc(0x00);
+   
+   valvulaSaida = 0;
 }
 
 void ligaHeater()
 {
    putc(0x02);
    putc(0x01);
+   
+   heater = 1;
 }
 
 void desligaHeater()
 {
    putc(0x02);
    putc(0x00);
+   
+   heater = 0;
 }
 
 void ligaCooler()
 {
    putc(0x03);
    putc(0x01);
+   
+   cooler = 1;
 }
 
 void desligaCooler()
 {
    putc(0x03);
    putc(0x00);
+   
+   cooler = 0;
 }
 
 void ligaMixer()
 {
    putc(0x04);
    putc(0x01);
+   
+   mixer = 1;
 }
 
 void desligaMixer()
 {
    putc(0x04);
    putc(0x00);
+   
+   mixer = 0;
 }
 
 int1 getSensorBaixo()
@@ -249,9 +337,17 @@ int1 getSensorBaixo()
    return getc();
 }
 
-int16 getTemperatura()
-{
-   putc(0x31);
+int16 getTemperatura(){
+
+//!   int8 valorh = 0, valorl = 0;
+//!
+//!   putc(0x32); 
+//!   valorh=getc(); 
+//!   valorl=getc();
+//!   
+//!   return (valorh<<8)|valorl;
+
+   putc(0x32);
    return getc();
 }
 
