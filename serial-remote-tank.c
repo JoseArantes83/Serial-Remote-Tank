@@ -2,6 +2,9 @@
 #include <lcd_8bits.c>
 
 int1 valvulaEntrada = 0, valvulaSaida = 0, heater = 0, cooler = 0, mixer = 0, sensorAlto = 0, sensorBaixo = 0;
+int1 fimMistura = 0;
+int8 tempoMistura = 0;
+int16 temperatura = 0, tempo_ms = 0, contaMistura = 0;
 
 void abreValvulaEntrada();
 void fechaValvulaEntrada();
@@ -20,7 +23,15 @@ int1 getSensorAlto();
 #INT_TIMER0
 void  TIMER0_isr(void) 
 {
-
+   contaMistura++;
+   
+   if(contaMistura == tempo_ms){
+   
+      fimMistura = 1;
+      
+      contaMistura = 0;
+   
+   }
 }
 
 void main()
@@ -34,17 +45,60 @@ void main()
 
    while(TRUE)
    {
-      sensorBaixo = getSensorBaixo();
+      sensorAlto = getSensorAlto();
       
-      if(sensorBaixo == 1){
+      if(sensorAlto == 0){
       
-         abreValvulaEntrada();
+         if(valvulaEntrada == 0)
+            abreValvulaEntrada();
       
       }
       
       else{
       
+         if(valvulaEntrada == 1)
+            fechaValvulaEntrada();
+      
+         temperatura = getTemperatura();
          
+         if(temperatura < 30){
+         
+            if(heater == 0)
+               ligaHeater();
+         
+         }
+         
+         else{
+            
+            if(heater == 1)
+               desligaHeater();
+         
+            if(fimMistura == 0){
+               
+               ligaMixer();
+            
+            }
+            
+            else{
+            
+               if(mixer == 1)
+                  desligaMixer();
+               
+               if(sensorBaixo == 1){
+               
+                  abreValvulaSaida();
+               
+               }
+               
+               else{
+               
+                  fechaValvulaSaida();
+               
+               }
+            
+            }
+         
+         }
       
       }
       // criar booleanos de estado
@@ -68,51 +122,71 @@ void main()
 void abreValvulaEntrada(){  // Validado
    putc(0x00);
    putc(0x01);
+   
+   valvulaEntrada = 1;
 }
 
 void fechaValvulaEntrada(){  // Validado
    putc(0x00);
    putc(0x00);
+   
+   valvulaEntrada = 0;
 }
  
 void abreValvulaSaida(){  // Validado
    putc(0x01);
    putc(0x01);
+   
+   valvulaSaida = 1;
 }
 
 void fechaValvulaSaida(){  // Validado
    putc(0x01);
    putc(0x00);
+   
+   valvulaSaida = 0;
 }
 
 void ligaHeater(){
    putc(0x02);
    putc(0x01);
+   
+   heater = 1;
 }
 
 void desligaHeater(){
    putc(0x02);
    putc(0x00);
+   
+   heater = 0;
 }
 
 void ligaCooler(){
    putc(0x03);
    putc(0x01);
+   
+   cooler = 1;
 }
 
 void desligaCooler(){
    putc(0x03);
    putc(0x00);
+   
+   cooler = 0;
 }
 
 void ligaMixer(){
    putc(0x04);
    putc(0x01);
+   
+   mixer = 1;
 }
 
 void desligaMixer(){
    putc(0x04);
    putc(0x00);
+   
+   mixer = 0;
 }
 
 int1 getSensorBaixo(){
@@ -123,7 +197,15 @@ int1 getSensorBaixo(){
 
 int16 getTemperatura(){
 
-   putc(0x31);
+//!   int8 valorh = 0, valorl = 0;
+//!
+//!   putc(0x32); 
+//!   valorh=getc(); 
+//!   valorl=getc();
+//!   
+//!   return (valorh<<8)|valorl;
+
+   putc(0x32);
    return getc();
 }
 
