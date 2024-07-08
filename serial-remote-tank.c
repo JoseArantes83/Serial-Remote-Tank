@@ -1,14 +1,17 @@
 #include <serial-remote-tank.h>
 #include <lcd_8bits.c>
 
+int1 valvulaEntrada = 0, valvulaSaida = 0, heater = 0, cooler = 0, stirrer = 0;
+int1 valvulaBaixo = 0, valvulaCima = 0;
+
 void abreValvulaEntrada();
 void fechaValvulaEntrada();
 void abreValvulaSaida();
 void fechaValvulaSaida();
 void ligaHeater();
 void desligaHeater();
-void ligaFan();
-void desligaFan();
+void ligaCooler();
+void desligaCooler();
 void ligaStirrer();
 void desligaStirrer();
 
@@ -31,6 +34,20 @@ void main()
    while(TRUE)
    {
       
+      // criar booleanos de estado
+      // testar se tá vazio
+      // se n tive esvazia
+      // testar se chegou no topo, se tiver, desliga a valvula de cima
+      // e liga o heater 
+      // se chegar na temperatura desliga o heater, senão
+      // continua esquentando.
+      // liga o mixer
+      // se não tiver dado o tempo, testa se temperatura está adequada 
+      // e continua a partir daí
+      // senão liga a valvula baixo
+      // desliga heater
+      // desliga mixer
+      // se sensor baixo for 0, desliga valvula baixo e começa de novo.
    }
 
 }
@@ -65,12 +82,12 @@ void desligaHeater(){
    putc(0x00);
 }
 
-void ligaFan(){
+void ligaCooler(){
    putc(0x03);
    putc(0x01);
 }
 
-void desligaFan(){
+void desligaCooler(){
    putc(0x03);
    putc(0x00);
 }
