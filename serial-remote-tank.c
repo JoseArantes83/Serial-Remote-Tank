@@ -1,7 +1,7 @@
 #include <serial-remote-tank.h>
 #include <lcd_8bits.c>
 
-int1 valvulaEntrada = 0, valculaSaida = 0, heater = 0, cooler = 0, mixer = 0, sensoralto = 0, sensorbaixo = 0;
+int1 valvulaEntrada = 0, valvulaSaida = 0, heater = 0, cooler = 0, mixer = 0, sensorAlto = 0, sensorBaixo = 0;
 
 void abreValvulaEntrada();
 void fechaValvulaEntrada();
@@ -11,8 +11,8 @@ void ligaHeater();
 void desligaHeater();
 void ligaCooler();
 void desligaCooler();
-void ligaStirrer();
-void desligaStirrer();
+void ligaMixer();
+void desligaMixer();
 int1 getSensorBaixo();
 int16 getTemperatura();
 int1 getSensorAlto();
@@ -38,19 +38,19 @@ void main()
       
  
       // criar booleanos de estado
-      // testar se tá vazio
+      // testar se tï¿½ vazio
       // se n tive esvazia
       // testar se chegou no topo, se tiver, desliga a valvula de cima
       // e liga o heater 
-      // se chegar na temperatura desliga o heater, senão
+      // se chegar na temperatura desliga o heater, senï¿½o
       // continua esquentando.
       // liga o mixer
-      // se não tiver dado o tempo, testa se temperatura está adequada 
-      // e continua a partir daí
-      // senão liga a valvula baixo
+      // se nï¿½o tiver dado o tempo, testa se temperatura estï¿½ adequada 
+      // e continua a partir daï¿½
+      // senï¿½o liga a valvula baixo
       // desliga heater
       // desliga mixer
-      // se sensor baixo for 0, desliga valvula baixo e começa de novo.
+      // se sensor baixo for 0, desliga valvula baixo e comeï¿½a de novo.
    }
 }
 
@@ -94,12 +94,12 @@ void desligaCooler(){
    putc(0x00);
 }
 
-void ligaStirrer(){
+void ligaMixer(){
    putc(0x04);
    putc(0x01);
 }
 
-void desligaStirrer(){
+void desligaMixer(){
    putc(0x04);
    putc(0x00);
 }
