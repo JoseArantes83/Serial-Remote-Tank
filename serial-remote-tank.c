@@ -37,15 +37,13 @@ void TIMER0_isr(void)
       contador = 0;
       fimTempo = 1;
    }
-   
+
    contaMistura++;
-   
-   if(contaMistura >= tempo_ms){
-   
+
+   if (contaMistura >= tempo_ms)
+   {
       fimMistura = 1;
-      
       contaMistura = 0;
-   
    }
 }
 
@@ -57,14 +55,13 @@ void main()
    enable_interrupts(GLOBAL);
 
    lcd_init();
-   
+
    temperaturaSP = 30;
-      
+
    setTemperaturaEsperada(temperaturaSP);
 
    while (TRUE)
    {
-
       if (fimTempo)
       {
          fimTempo = 0;
@@ -104,114 +101,82 @@ void main()
             printf(lcd_write_dat, "TempMax:");
             mostraDados(3);
             break;
-         case 4:
-            mostraDados(4);
-            break;
          }
-      }
-      
-      if(processo == 0){
-      
-         sensorAlto = getSensorAlto();
-      
-         if(sensorAlto == 0){
-         
-            if(valvulaEntrada == 0)
-               abreValvulaEntrada();
-         
-         }
-         
-         else{
-         
-            fechaValvulaEntrada();
-            
-            processo++;
-         
-         }
-      
-      }
-      
-      if(processo == 1){
-      
-         quente = verificaQuente();
-      
-         if(quente == 0){
-         
-            ligaHeater();
-         
-         }
-         
-         else{
-         
-            desligaHeater();
-            
-            processo++;
-         
-         }
-      
-      }
-      
-      if(processo == 2){
-      
-         if(mixer == 0){
-      
-            fimMistura = 0;
-            
-            contaMistura = 0;
-            
-            ligaMixer();
-         
-         }
-      
-         if(fimMistura == 1){
-         
-            desligaMixer();
-            
-            fimMistura = 0;
-            
-            processo++;
-            
-         }
-      
-      }
-      
-      if(processo == 3){
-      
-         sensorAlto = getSensorAlto();
-      
-         if(sensorAlto == 1){
-         
-            abreValvulaSaida();
-         
-         }
-         
-         else{
-         
-            sensorBaixo = getSensorBaixo();
-         
-            if(sensorBaixo == 0){
-            
-               fechaValvulaSaida();
-               
-               processo = 0;
-            
-            }
-         
-         }
-      
       }
 
+      if (processo == 0)
+      {
+         sensorAlto = getSensorAlto();
+
+         if (sensorAlto == 0)
+         {
+            if (valvulaEntrada == 0)
+               abreValvulaEntrada();
+         }
+         else
+         {
+            fechaValvulaEntrada();
+            processo++;
+         }
+      }
+
+      if (processo == 1)
+      {
+         quente = verificaQuente();
+
+         if (quente == 0)
+            ligaHeater();
+         else
+         {
+            desligaHeater();
+            processo++;
+         }
+      }
+
+      if (processo == 2)
+      {
+         if (mixer == 0)
+         {
+            fimMistura = 0;
+            contaMistura = 0;
+            ligaMixer();
+         }
+
+         if (fimMistura == 1)
+         {
+            desligaMixer();
+            fimMistura = 0;
+            processo++;
+         }
+      }
+
+      if (processo == 3)
+      {
+         sensorAlto = getSensorAlto();
+
+         if (sensorAlto == 1)
+            abreValvulaSaida();
+         else
+         {
+            sensorBaixo = getSensorBaixo();
+
+            if (sensorBaixo == 0)
+            {
+               fechaValvulaSaida();
+               processo = 0;
+               mudaTela();
+            }
+         }
+      }
    }
-      
 }
 
 void mudaTela()
 {
    tela++;
-   if (tela > 4)
-   {
+   
+   if (tela > 3)
       tela = 1;
-   }
 }
 
 void mostraDados(int8 num_tela)
@@ -264,52 +229,38 @@ void mostraDados(int8 num_tela)
       lcd_gotoxy(16, 4);
       printf(lcd_write_dat, "%i", cooler);
       break;
-   case 4:
-      lcd_gotoxy(5, 1);
-      printf(lcd_write_dat, "");
-      lcd_gotoxy(8, 2);
-      printf(lcd_write_dat, "");
-      lcd_gotoxy(17, 2);
-      printf(lcd_write_dat, "");
-      lcd_gotoxy(8, 3);
-      printf(lcd_write_dat, "");
-      lcd_gotoxy(17, 3);
-      printf(lcd_write_dat, "");
-      lcd_gotoxy(7, 4);
-      printf(lcd_write_dat, "");
-      break;
    }
 }
 
 void abreValvulaEntrada()
-{ // Validado
+{
    putc(0x00);
    putc(0x01);
-   
+
    valvulaEntrada = 1;
 }
 
 void fechaValvulaEntrada()
-{ // Validado
+{
    putc(0x00);
    putc(0x00);
-   
+
    valvulaEntrada = 0;
 }
 
 void abreValvulaSaida()
-{ // Validado
+{
    putc(0x01);
    putc(0x01);
-   
+
    valvulaSaida = 1;
 }
 
 void fechaValvulaSaida()
-{ // Validado
+{
    putc(0x01);
    putc(0x00);
-   
+
    valvulaSaida = 0;
 }
 
@@ -317,7 +268,7 @@ void ligaHeater()
 {
    putc(0x02);
    putc(0x01);
-   
+
    heater = 1;
 }
 
@@ -325,7 +276,7 @@ void desligaHeater()
 {
    putc(0x02);
    putc(0x00);
-   
+
    heater = 0;
 }
 
@@ -333,7 +284,7 @@ void ligaCooler()
 {
    putc(0x03);
    putc(0x01);
-   
+
    cooler = 1;
 }
 
@@ -341,7 +292,7 @@ void desligaCooler()
 {
    putc(0x03);
    putc(0x00);
-   
+
    cooler = 0;
 }
 
@@ -349,7 +300,7 @@ void ligaMixer()
 {
    putc(0x04);
    putc(0x01);
-   
+
    mixer = 1;
 }
 
@@ -357,7 +308,7 @@ void desligaMixer()
 {
    putc(0x04);
    putc(0x00);
-   
+
    mixer = 0;
 }
 
@@ -367,15 +318,15 @@ int1 getSensorBaixo()
    return getc();
 }
 
-int16 getTemperatura(){
-
+int16 getTemperatura()
+{
    int8 valorh = 0, valorl = 0;
 
-   putc(0x32); 
-   valorh=getc(); 
-   valorl=getc();
-   
-   return (valorh<<8)|valorl;
+   putc(0x32);
+   valorh = getc();
+   valorl = getc();
+
+   return (valorh << 8) | valorl;
 }
 
 int1 getSensorAlto()
@@ -384,17 +335,15 @@ int1 getSensorAlto()
    return getc();
 }
 
-void setTemperaturaEsperada(int16 temp){
-
+void setTemperaturaEsperada(int16 temp)
+{
    putc(0x21);
-   putc((temp&0xFF00)>>8); 
-   putc(temp&0x00FF);
-
+   putc((temp & 0xFF00) >> 8);
+   putc(temp & 0x00FF);
 }
 
-int1 verificaQuente(){
-
+int1 verificaQuente()
+{
    putc(0x13);
    return getc();
-
 }
