@@ -2,12 +2,13 @@
 #include <lcd_8bits_4x20_Mod.c>
 
 int1 processo_ligado = 0, fimTempo = 0;
-int1 valvulaEntrada = 0, valvulaSaida = 0, heater = 0, cooler = 0, mixer = 0, sensorAlto = 0, sensorBaixo = 0;
-int1  temperaturaAtual = 0, temperaturaSP = 0, temperaturaBaixa = 0, temperaturaAlta = 0,
-int8 tela = 1, volume = 0, contador = 0, temperaturaMinima = 0, temperaturaMaxima = 0;
+int1 valvulaEntrada = 0, valvulaSaida = 0, heater = 0, cooler = 0, mixer = 0, sensorAlto = 0, sensorBaixo = 0, quente = 0;
+int16 temperaturaSP = 0, temperaturaBaixa = 0, temperaturaAlta = 0;
+int8 tela = 1, volume = 0, contador = 0, temperaturaMinima = 0, temperaturaMaxima = 0, processo = 0;
 int1 fimMistura = 0;
 int8 tempoMistura = 0;
-int16 tempo_ms = 0, contaMistura = 0;
+int16 tempo_ms = 5000, contaMistura = 0, temperaturaAtual = 0;
+float conversao = 1.0 / 256.0;
 
 void abreValvulaEntrada();
 void fechaValvulaEntrada();
@@ -24,19 +25,22 @@ int16 getTemperatura();
 int1 getSensorAlto();
 void mostraDados(int8 num_tela);
 void mudaTela();
+void setTemperaturaEsperada(int16 temp);
+int1 verificaQuente();
 
 #INT_TIMER0
 void TIMER0_isr(void)
 {
    contador++;
-   if (contador == 100)
+   if (contador == 1000)
    {
       contador = 0;
       fimTempo = 1;
    }
+   
    contaMistura++;
    
-   if(contaMistura == tempo_ms){
+   if(contaMistura >= tempo_ms){
    
       fimMistura = 1;
       
@@ -53,6 +57,10 @@ void main()
    enable_interrupts(GLOBAL);
 
    lcd_init();
+   
+   temperaturaSP = 30;
+      
+   setTemperaturaEsperada(temperaturaSP);
 
    while (TRUE)
    {
@@ -101,56 +109,91 @@ void main()
             break;
          }
       }
-      sensorAlto = getSensorAlto();
       
-      if(sensorAlto == 0){
+      if(processo == 0){
       
-         if(valvulaEntrada == 0)
-            abreValvulaEntrada();
+         sensorAlto = getSensorAlto();
       
-      }
-      
-      else{
-      
-         if(valvulaEntrada == 1)
-            fechaValvulaEntrada();
-      
-         temperaturaAtual = getTemperatura();
+         if(sensorAlto == 0){
          
-         if(temperaturaAtual < 30){
-         
-            if(heater == 0)
-               ligaHeater();
+            if(valvulaEntrada == 0)
+               abreValvulaEntrada();
          
          }
          
          else{
-            
-            if(heater == 1)
-               desligaHeater();
          
-            if(fimMistura == 0){
-               
-               ligaMixer();
+            fechaValvulaEntrada();
             
-            }
+            processo++;
+         
+         }
+      
+      }
+      
+      if(processo == 1){
+      
+         quente = verificaQuente();
+      
+         if(quente == 0){
+         
+            ligaHeater();
+         
+         }
+         
+         else{
+         
+            desligaHeater();
             
-            else{
+            processo++;
+         
+         }
+      
+      }
+      
+      if(processo == 2){
+      
+         if(mixer == 0){
+      
+            fimMistura = 0;
             
-               if(mixer == 1)
-                  desligaMixer();
+            contaMistura = 0;
+            
+            ligaMixer();
+         
+         }
+      
+         if(fimMistura == 1){
+         
+            desligaMixer();
+            
+            fimMistura = 0;
+            
+            processo++;
+            
+         }
+      
+      }
+      
+      if(processo == 3){
+      
+         sensorAlto = getSensorAlto();
+      
+         if(sensorAlto == 1){
+         
+            abreValvulaSaida();
+         
+         }
+         
+         else{
+         
+            sensorBaixo = getSensorBaixo();
+         
+            if(sensorBaixo == 0){
+            
+               fechaValvulaSaida();
                
-               if(sensorBaixo == 1){
-               
-                  abreValvulaSaida();
-               
-               }
-               
-               else{
-               
-                  fechaValvulaSaida();
-               
-               }
+               processo = 0;
             
             }
          
@@ -158,21 +201,8 @@ void main()
       
       }
 
-      // criar booleanos de estado
-      // testar se t� vazio
-      // se n tive esvazia
-      // testar se chegou no topo, se tiver, desliga a valvula de cima
-      // e liga o heater
-      // se chegar na temperatura desliga o heater, sen�o
-      // continua esquentando.
-      // liga o mixer
-      // se n�o tiver dado o tempo, testa se temperatura est� adequada
-      // e continua a partir da�
-      // sen�o liga a valvula baixo
-      // desliga heater
-      // desliga mixer
-      // se sensor baixo for 0, desliga valvula baixo e come�a de novo.
    }
+      
 }
 
 void mudaTela()
@@ -216,9 +246,9 @@ void mostraDados(int8 num_tela)
       lcd_gotoxy(16, 3);
       printf(lcd_write_dat, "%i", cooler);
       lcd_gotoxy(7, 4);
-      printf(lcd_write_dat, "%i", temperaturaAtual);
+      printf(lcd_write_dat, "%lu", temperaturaAtual);
       lcd_gotoxy(17, 4);
-      printf(lcd_write_dat, "%i", temperaturaSP);
+      printf(lcd_write_dat, "%lu", temperaturaSP);
       break;
    case 3:
       lcd_gotoxy(8, 1);
@@ -339,20 +369,32 @@ int1 getSensorBaixo()
 
 int16 getTemperatura(){
 
-//!   int8 valorh = 0, valorl = 0;
-//!
-//!   putc(0x32); 
-//!   valorh=getc(); 
-//!   valorl=getc();
-//!   
-//!   return (valorh<<8)|valorl;
+   int8 valorh = 0, valorl = 0;
 
-   putc(0x32);
-   return getc();
+   putc(0x32); 
+   valorh=getc(); 
+   valorl=getc();
+   
+   return (valorh<<8)|valorl;
 }
 
 int1 getSensorAlto()
 {
    putc(0x10);
    return getc();
+}
+
+void setTemperaturaEsperada(int16 temp){
+
+   putc(0x21);
+   putc((temp&0xFF00)>>8); 
+   putc(temp&0x00FF);
+
+}
+
+int1 verificaQuente(){
+
+   putc(0x13);
+   return getc();
+
 }
