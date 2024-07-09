@@ -6,7 +6,8 @@ int1 valvulaEntrada = 0, valvulaSaida = 0, heater = 0, cooler = 0, mixer = 0;
 int1 sensorAlto = 0, sensorBaixo = 0, quente = 0, fimMistura = 0;
 int8 tela = 1, volume = 0, contador = 0, temperaturaMinima = 0;
 int8 temperaturaMaxima = 0, processo = 0, tempoMistura = 0, histerese = 0;
-int16 temperaturaSP = 0, temperaturaBaixa = 0, temperaturaAlta = 0;
+int16 temperaturaSP = 0, temperaturaBaixa = 25, temperaturaAlta = 0;
+
 int16 tempo_ms = 5000, contaMistura = 0, temperaturaAtual = 0;
 float conversao = 1.0 / 256.0;
 
@@ -23,9 +24,9 @@ void desligaMixer();
 int1 getSensorBaixo();
 int16 getTemperatura();
 int1 getSensorAlto();
-void mostraDados(int8 num_tela);
+void mostraDados(int8);
 void mudaTela();
-void setTemperaturaEsperada(int16 temp);
+void setTemperaturaEsperada(int16);
 int1 verificaQuente();
 
 #INT_TIMER0
@@ -59,6 +60,11 @@ void main()
    temperaturaSP = 30;
 
    setTemperaturaEsperada(temperaturaSP);
+
+   //!   set temperatura ambiente
+   putc(0x20);
+   putc((temperaturaBaixa & 0xFF00) >> 8);
+   putc(temperaturaBaixa & 0x00FF);
 
    while (TRUE)
    {
@@ -118,68 +124,87 @@ void main()
          }
       }
 
-      if (processo == 0)
+      if (processo_ligado == 1)
       {
-         sensorAlto = getSensorAlto();
 
-         if (sensorAlto == 0)
+         if (processo == 0)
          {
-            if (valvulaEntrada == 0)
-               abreValvulaEntrada();
-         }
-         else
-         {
-            fechaValvulaEntrada();
-            processo++;
-         }
-      }
+            sensorAlto = getSensorAlto();
 
-      if (processo == 1)
-      {
-         quente = verificaQuente();
-
-         if (quente == 0)
-            ligaHeater();
-         else
-         {
-            desligaHeater();
-            processo++;
-         }
-      }
-
-      if (processo == 2)
-      {
-         if (mixer == 0)
-         {
-            fimMistura = 0;
-            contaMistura = 0;
-            ligaMixer();
-         }
-
-         if (fimMistura == 1)
-         {
-            desligaMixer();
-            fimMistura = 0;
-            processo++;
-         }
-      }
-
-      if (processo == 3)
-      {
-         sensorAlto = getSensorAlto();
-
-         if (sensorAlto == 1)
-            abreValvulaSaida();
-         else
-         {
-            sensorBaixo = getSensorBaixo();
-
-            if (sensorBaixo == 0)
+            if (sensorAlto == 0)
             {
-               fechaValvulaSaida();
-               processo = 0;
-               mudaTela();
+               if (valvulaEntrada == 0)
+                  abreValvulaEntrada();
             }
+            else
+            {
+               fechaValvulaEntrada();
+               processo++;
+            }
+         }
+
+         if (processo == 1)
+         {
+            quente = verificaQuente();
+
+            if (quente == 0)
+               ligaHeater();
+            else
+            {
+               desligaHeater();
+               processo++;
+            }
+         }
+
+         if (processo == 2)
+         {
+            if (mixer == 0)
+            {
+               fimMistura = 0;
+               contaMistura = 0;
+               ligaMixer();
+            }
+
+            if (fimMistura == 1)
+            {
+               desligaMixer();
+               fimMistura = 0;
+               processo++;
+            }
+         }
+
+         if (processo == 3)
+         {
+            sensorAlto = getSensorAlto();
+
+            if (sensorAlto == 1)
+               abreValvulaSaida();
+            else
+            {
+               sensorBaixo = getSensorBaixo();
+
+               if (sensorBaixo == 0)
+               {
+                  fechaValvulaSaida();
+                  processo = 0;
+                  mudaTela();
+               }
+            }
+         }
+      }
+      else
+      {
+
+         sensorBaixo = getSensorBaixo();
+
+         if (sensorBaixo == 1)
+         {
+            abreValvulaSaida();
+         }
+         else
+         {
+            fechaValvulaSaida();
+            processo = 0;
          }
       }
    }
