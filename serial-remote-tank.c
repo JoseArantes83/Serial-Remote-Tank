@@ -1,12 +1,12 @@
 #include <serial-remote-tank.h>
 #include <lcd_8bits_4x20_Mod.c>
 
-int1 processo_ligado = 0, fimTempo = 0;
-int1 valvulaEntrada = 0, valvulaSaida = 0, heater = 0, cooler = 0, mixer = 0, sensorAlto = 0, sensorBaixo = 0, quente = 0;
+int1 processo_ligado = 1, fimTempo = 0;
+int1 valvulaEntrada = 0, valvulaSaida = 0, heater = 0, cooler = 0, mixer = 0;
+int1 sensorAlto = 0, sensorBaixo = 0, quente = 0, fimMistura = 0;
+int8 tela = 1, volume = 0, contador = 0, temperaturaMinima = 0;
+int8 temperaturaMaxima = 0, processo = 0, tempoMistura = 0, histerese = 0;
 int16 temperaturaSP = 0, temperaturaBaixa = 0, temperaturaAlta = 0;
-int8 tela = 1, volume = 0, contador = 0, temperaturaMinima = 0, temperaturaMaxima = 0, processo = 0;
-int1 fimMistura = 0;
-int8 tempoMistura = 0;
 int16 tempo_ms = 5000, contaMistura = 0, temperaturaAtual = 0;
 float conversao = 1.0 / 256.0;
 
@@ -69,6 +69,7 @@ void main()
          switch (tela)
          {
          case 1:
+            lcd_write_cmd(0x01); 
             lcd_gotoxy(1, 1);
             printf(lcd_write_dat, "Pwr:");
             lcd_gotoxy(1, 2);
@@ -80,17 +81,30 @@ void main()
             mostraDados(1);
             break;
          case 2:
+            lcd_write_cmd(0x01); 
             lcd_gotoxy(1, 1);
-            printf(lcd_write_dat, "NvlAlt:  NvlBai:");
+            printf(lcd_write_dat, "NvlAlt: ");
             lcd_gotoxy(1, 2);
-            printf(lcd_write_dat, "TempBai:  TempAlt:");
+            printf(lcd_write_dat, "NvlBai:");
             lcd_gotoxy(1, 3);
-            printf(lcd_write_dat, "Volume:  Cooler:");
+            printf(lcd_write_dat, "TempBai:");
             lcd_gotoxy(1, 4);
-            printf(lcd_write_dat, "TempAtua:  TempSP:");
+            printf(lcd_write_dat, "TempAlt:");
             mostraDados(2);
             break;
          case 3:
+            lcd_write_cmd(0x01);
+            lcd_gotoxy(1, 1);
+            printf(lcd_write_dat, "Volume:");
+            lcd_gotoxy(1, 2);
+            printf(lcd_write_dat, "Cooler:");
+            lcd_gotoxy(1, 3);
+            printf(lcd_write_dat, "TempAtua:");
+            lcd_gotoxy(1, 4);
+            printf(lcd_write_dat, "TempSP:");
+            mostraDados(3);
+         case 4:
+            lcd_write_cmd(0x01); 
             lcd_gotoxy(1, 1);
             printf(lcd_write_dat, "Histerese: ");
             lcd_gotoxy(1, 2);
@@ -99,7 +113,7 @@ void main()
             printf(lcd_write_dat, "TempMin:");
             lcd_gotoxy(1, 4);
             printf(lcd_write_dat, "TempMax:");
-            mostraDados(3);
+            mostraDados(4);
             break;
          }
       }
@@ -175,7 +189,7 @@ void mudaTela()
 {
    tela++;
    
-   if (tela > 3)
+   if (tela > 4)
       tela = 1;
 }
 
@@ -200,34 +214,32 @@ void mostraDados(int8 num_tela)
    case 2:
       lcd_gotoxy(8, 1);
       printf(lcd_write_dat, "%i", sensorAlto);
-      lcd_gotoxy(18, 1);
+      lcd_gotoxy(8, 2);
       printf(lcd_write_dat, "%i", sensorBaixo);
-      lcd_gotoxy(9, 2);
-      printf(lcd_write_dat, "%i", temperaturaMinima);
-      lcd_gotoxy(19, 2);
-      printf(lcd_write_dat, "%i", temperaturaMaxima);
-      lcd_gotoxy(8, 3);
-      printf(lcd_write_dat, "%i", volume);
-      lcd_gotoxy(16, 3);
-      printf(lcd_write_dat, "%i", cooler);
-      lcd_gotoxy(7, 4);
-      printf(lcd_write_dat, "%lu", temperaturaAtual);
-      lcd_gotoxy(17, 4);
-      printf(lcd_write_dat, "%lu", temperaturaSP);
+      lcd_gotoxy(9, 3);
+      printf(lcd_write_dat, "%lu", temperaturaBaixa);
+      lcd_gotoxy(9, 4);
+      printf(lcd_write_dat, "%lu", temperaturaAlta);
       break;
    case 3:
       lcd_gotoxy(8, 1);
-      printf(lcd_write_dat, "%i", sensorAlto);
-      lcd_gotoxy(18, 1);
-      printf(lcd_write_dat, "%i", sensorBaixo);
-      lcd_gotoxy(9, 2);
-      printf(lcd_write_dat, "%i", temperaturaMinima);
-      lcd_gotoxy(19, 2);
-      printf(lcd_write_dat, "%i", temperaturaMaxima);
-      lcd_gotoxy(8, 3);
       printf(lcd_write_dat, "%i", volume);
-      lcd_gotoxy(16, 4);
+      lcd_gotoxy(8, 2);
       printf(lcd_write_dat, "%i", cooler);
+      lcd_gotoxy(10, 3);
+      printf(lcd_write_dat, "%lu", temperaturaAtual);
+      lcd_gotoxy(7, 4);
+      printf(lcd_write_dat, "%lu", temperaturaSP);
+      break;
+   case 4:
+      lcd_gotoxy(11, 1);
+      printf(lcd_write_dat, "%i", histerese);
+      lcd_gotoxy(14, 2);
+      printf(lcd_write_dat, "%i", tempoMistura);
+      lcd_gotoxy(9, 3);
+      printf(lcd_write_dat, "%i", temperaturaMinima);
+      lcd_gotoxy(9, 4);
+      printf(lcd_write_dat, "%i", temperaturaMaxima);
       break;
    }
 }
